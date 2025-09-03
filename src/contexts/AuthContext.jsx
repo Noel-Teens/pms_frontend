@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access');
     if (token) {
       fetchUserData();
     } else {
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching user data:', error);
-      localStorage.removeItem('token');
+      localStorage.removeItem('access');
       setIsAuthenticated(false);
       setLoading(false);
     }

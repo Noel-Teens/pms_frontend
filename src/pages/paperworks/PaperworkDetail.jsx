@@ -40,27 +40,30 @@ const PaperworkDetail = () => {
   fetchPaperworkData();
 }, [id]);
 
-  const handleDownload = async (filePath, filename) => {
-    try {
-      // Expect `paperworksAPI.downloadFile` to set { responseType: 'blob' }
-      const response = await paperworksAPI.downloadFile(filePath);
-      const blob = new Blob([response.data]);
-      const downloadUrl = window.URL.createObjectURL(blob);
+const handleDownload = async (fileType, versionNo) => {
+  if (!fileType || !versionNo) {
+    toast.error("File type or version is missing");
+    return;
+  }
 
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+  try {
+    const token = localStorage.getItem("access");
+    const downloadUrl = `/admin_app/paperworks/${paperwork.id}/versions/${versionNo}/${fileType}/download/?token=${encodeURIComponent(token)}`;
 
-      toast.success(`Downloading ${filename}`);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      toast.error('Failed to download file');
-    }
-  };
+    const response = await paperworksAPI.downloadFile(downloadUrl);
+
+    const blob = new Blob([response.data]);
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `${paperwork.title}.${fileType}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (error) {
+    console.error("Download failed:", error);
+    toast.error("Download failed. Please try again.");
+  }
+};
 
   const getStatusBadge = (status) => {
     const statusClasses = {
@@ -448,7 +451,7 @@ const PaperworkDetail = () => {
                               View PDF
                             </button>
                             <button
-                              onClick={() => handleDownload(version.pdf_path, `${paperwork.title}_v${version.version_no}.pdf`)}
+                              onClick={() => handleDownload("pdf", version.version_no)}
                               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -470,7 +473,7 @@ const PaperworkDetail = () => {
                               View LaTeX
                             </button>
                             <button
-                              onClick={() => handleDownload(version.latex_path, `${paperwork.title}_v${version.version_no}.tex`)}
+                              onClick={() => handleDownload("tex", version.version_no)}
                               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -492,7 +495,7 @@ const PaperworkDetail = () => {
                               View Code
                             </button>
                             <button
-                              onClick={() => handleDownload(version.python_path, `${paperwork.title}_v${version.version_no}.zip`)}
+                              onClick={() => handleDownload("zip", version.version_no)}
                               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -514,7 +517,7 @@ const PaperworkDetail = () => {
                               View DOCX
                             </button>
                             <button
-                              onClick={() => handleDownload(version.docx_path, `${paperwork.title}_v${version.version_no}.docx`)}
+                              onClick={() => handleDownload("docx", version.version_no)}
                               className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

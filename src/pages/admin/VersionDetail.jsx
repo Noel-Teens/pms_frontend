@@ -44,24 +44,30 @@ const VersionDetail = () => {
     }
   }, [paperId, versionNo]);
 
-  const handleDownload = async (filePath, filename) => {
+  const handleDownload = async (fileType) => {
+    if (!fileType || !versionNo) {
+      toast.error("File type or version is missing");
+      return;
+    }
+  
     try {
-      const response = await paperworksAPI.downloadFile(filePath);
+      const token = localStorage.getItem("access");
+      const downloadUrl = `/admin_app/paperworks/${paperId}/versions/${versionNo}/${fileType}/download/?token=${encodeURIComponent(token)}`;
+      const paperResponse = await adminAPI.getPaperworkById(paperId);
+      const paperwork = paperResponse.data;
+  
+      const response = await paperworksAPI.downloadFile(downloadUrl);
+  
       const blob = new Blob([response.data]);
-      const downloadUrl = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename);
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `${paperwork.title}.${fileType}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-
-      toast.success(`Downloading ${filename}`);
     } catch (error) {
-      console.error('Error downloading file:', error);
-      toast.error('Failed to download file');
+      console.error("Download failed:", error);
+      toast.error("Download failed. Please try again.");
     }
   };
 
@@ -142,7 +148,7 @@ const VersionDetail = () => {
                 View PDF
               </button>
               <button
-                onClick={() => handleDownload(version.pdf_path, `${paper.title}_v${version.version_no}.pdf`)}
+                onClick={() => handleDownload('pdf')}
                 className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,7 +170,7 @@ const VersionDetail = () => {
                 View LaTeX
               </button>
               <button
-                onClick={() => handleDownload(version.latex_path, `${paper.title}_v${version.version_no}.tex`)}
+                onClick={() => handleDownload('tex')}
                 className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,7 +192,7 @@ const VersionDetail = () => {
                 View Code
               </button>
               <button
-                onClick={() => handleDownload(version.python_path, `${paper.title}_v${version.version_no}.zip`)}
+                onClick={() => handleDownload('zip')}
                 className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,7 +214,7 @@ const VersionDetail = () => {
                 View DOCX
               </button>
               <button
-                onClick={() => handleDownload(version.docx_path, `${paper.title}_v${version.version_no}.docx`)}
+                onClick={() => handleDownload('docx')}
                 className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-r-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border-l-0 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
