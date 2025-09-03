@@ -76,7 +76,7 @@ const AdminDashboard = () => {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+          <h1 className="text-3xl text-[#FF6B00] font-bold">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-300 mt-1">Overview of research paper management system</p>
         </div>
       </div>
@@ -123,20 +123,24 @@ const AdminDashboard = () => {
 
       {/* Quick Actions */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 dark:text-white">Quick Actions</h2>
-        <div className="flex gap-4">
-          <Button onClick={() => (window.location.href = '/admin/papers')} className="bg-blue-600 hover:bg-blue-700">
-            Assign New Paper
-          </Button>
-          <Button
-            onClick={() => (window.location.href = '/admin/users')}
-            variant="outline"
-            className="border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            Manage Users
-          </Button>
-        </div>
-      </div>
+  <h2 className="text-xl font-semibold text-gray-800 mb-4 dark:text-white">Quick Actions</h2>
+  <div className="flex gap-4">
+    <Button
+      onClick={() => (window.location.href = '/admin/papers')}
+      className="bg-[#0A2647] text-white hover:bg-[#FF6B00] hover:text-white"
+    >
+      Assign New Paper
+    </Button>
+    <Button
+      onClick={() => (window.location.href = '/admin/users')}
+      variant="outline"
+      className="border-[#0A2647] text-[#0A2647] dark:border-[#FF6B00] dark:text-[#FF6B00]"
+    >
+      Manage Users
+    </Button>
+  </div>
+</div>
+
 
       {/* Recent Papers */}
       <div className="mb-8">

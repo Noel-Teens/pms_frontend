@@ -68,13 +68,10 @@ const Register = () => {
 
       const response = await authAPI.googleLogin(idToken);
 
-      // Save tokens
       localStorage.setItem('access', response.data.access);
       localStorage.setItem('refresh', response.data.refresh);
 
-      // Ask AuthContext to fetch user + redirect
       await googleLoginSuccess();
-
       toast.success('Registered with Google!');
     } catch (error) {
       console.error('Google register error:', error);
@@ -83,105 +80,118 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Create an Account
-          </CardTitle>
-          <CardDescription className="text-center">
-            Use your email or Google to sign up
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium">
-                Username
-              </label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                placeholder="Choose a username"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Create a password"
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="confirmPassword"
-                className="text-sm font-medium"
-              >
-                Confirm Password
-              </label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="Confirm your password"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating Account...' : 'Register'}
-            </Button>
-          </form>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* 🔹 Top Bar */}
+      <header className="w-full bg-[#0A2647] text-white shadow-md">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center mr-280">
+          <h1 className="text-2xl text-[#FF6B00] font-bold tracking-wide">
+            Paper Management System
+          </h1>
+        </div>
+      </header>
 
-          {/* Google register button */}
-          <div className="mt-4">
-            <Button
-              onClick={handleGoogleRegister}
-              variant="outline"
-              className="w-full"
-            >
-              Sign up with Google
-            </Button>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link
-              to="/login"
-              className="font-medium text-primary hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+      {/* 🔹 Register Card */}
+      <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              Create an Account
+            </CardTitle>
+            <CardDescription className="text-center">
+              Use your email or Google to sign up
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="username" className="text-sm font-medium">
+                  Username
+                </label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                  placeholder="Choose a username"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Create a password"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm Password
+                </label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  placeholder="Confirm your password"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-[#0A2647] hover:bg-[#FF6B00] text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating Account...' : 'Register'}
+              </Button>
+            </form>
+
+            {/* Google register button */}
+            <div className="mt-4">
+              <Button
+                onClick={handleGoogleRegister}
+                variant="outline"
+                className="w-full border-[#0A2647] text-[#0A2647] hover:bg-[#FF6B00] hover:text-white"
+              >
+                Sign up with Google
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                className="font-medium text-[#FF6B00] hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+      </main>
     </div>
   );
 };
