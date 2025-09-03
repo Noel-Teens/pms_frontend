@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { api } from '../services/api';
-import { toast } from 'sonner';
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { api } from "../services/api";
+import { toast } from "sonner";
+import { renderAsync } from "docx-preview";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 const FileViewer = ({ paperworkId, versionNo, fileType }) => {
   const [loading, setLoading] = useState(true);
@@ -10,7 +15,12 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
   const [zipContents, setZipContents] = useState([]);
   const [selectedZipFile, setSelectedZipFile] = useState(null);
   const [zipFileContent, setZipFileContent] = useState(null);
+  const [docxContent, setDocxContent] = useState(null);
+  const [texContent, setTexContent] = useState(null);
+  const docxContainerRef = useRef(null);
   const { user } = useAuth();
+
+  const getAccessToken = () => localStorage.getItem("access");
 
   useEffect(() => {
     const fetchFile = async () => {
@@ -21,36 +31,54 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
         setZipContents([]);
         setSelectedZipFile(null);
         setZipFileContent(null);
+        setDocxContent(null);
+        setTexContent(null);
 
-        if (fileType === 'zip') {
-          // For ZIP files, first fetch the contents listing
-          const token = localStorage.getItem('token');
-          const zipContentsUrl = `/admin_app/paperworks/${paperworkId}/versions/${versionNo}/zip-contents/`;
-          
-          // Add token to URL if available
-          const urlWithToken = token ? `${zipContentsUrl}?token=${token}` : zipContentsUrl;
-          
-          try {
-            const response = await api.get(urlWithToken);
-            setZipContents(response.data.files || []);
-          } catch (error) {
-            console.error('Error fetching ZIP contents:', error);
-            if (error.response?.status === 403) {
-              setError('Authentication error. Please make sure you are logged in.');
-            } else {
-              setError(`Failed to load ZIP contents: ${error.message}`);
-            }
-          }
+        const baseUrl = api.defaults.baseURL;
+        const token = getAccessToken();
+
+        if (fileType === "zip") {
+          const zipContentsUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/zip-contents/`;
+          const urlWithToken = token
+            ? `${zipContentsUrl}?token=${encodeURIComponent(token)}`
+            : zipContentsUrl;
+
+          const response = await api.get(urlWithToken);
+          setZipContents(response.data.files || []);
+        } else if (fileType === "docx") {
+          const fileUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/docx/view/`;
+          const urlWithToken = token
+            ? `${fileUrl}?token=${encodeURIComponent(token)}`
+            : fileUrl;
+
+          const response = await api.get(urlWithToken, {
+            responseType: "arraybuffer",
+          });
+          setDocxContent(response.data);
+        } else if (fileType === "tex") {
+          const fileUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/tex/view/`;
+          const urlWithToken = token
+            ? `${fileUrl}?token=${encodeURIComponent(token)}`
+            : fileUrl;
+
+          const response = await api.get(urlWithToken, {
+            responseType: "text",
+          });
+          setTexContent(response.data);
         } else {
-          // For PDF, DOCX, and TEX files, get the direct file URL
-          // Use the full URL with the baseURL from the api instance
-          const baseUrl = api.defaults.baseURL;
           const fileUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/${fileType}/view/`;
-          setFileUrl(fileUrl);
+          const urlWithToken = token
+            ? `${fileUrl}?token=${encodeURIComponent(token)}`
+            : fileUrl;
+          setFileUrl(urlWithToken);
         }
       } catch (error) {
         console.error(`Error fetching ${fileType} file:`, error);
-        setError(`Failed to load ${fileType} file. ${error.response?.data?.error || error.message}`);
+        setError(
+          `Failed to load ${fileType} file. ${
+            error.response?.data?.error || error.message
+          }`
+        );
       } finally {
         setLoading(false);
       }
@@ -61,43 +89,48 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
     }
   }, [paperworkId, versionNo, fileType]);
 
+  useEffect(() => {
+    if (docxContent && docxContainerRef.current) {
+      renderAsync(docxContent, docxContainerRef.current);
+    }
+  }, [docxContent]);
+
   const viewZipFile = async (filePath) => {
     try {
       setSelectedZipFile(filePath);
       setZipFileContent(null);
-      
-      // Get the token for authentication
-      const token = localStorage.getItem('token');
+
+      const token = getAccessToken();
       const baseUrl = api.defaults.baseURL;
-      const zipFileContentUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/zip-file/${encodeURIComponent(filePath)}/`;
-      
-      // Add token to URL if available
-      const urlWithToken = token ? `${zipFileContentUrl}?token=${token}` : zipFileContentUrl;
-      
-      // Fetch the file content
+      const zipFileContentUrl = `${baseUrl}/admin_app/paperworks/${paperworkId}/versions/${versionNo}/zip-file/${encodeURIComponent(
+        filePath
+      )}/`;
+      const urlWithToken = token
+        ? `${zipFileContentUrl}?token=${encodeURIComponent(token)}`
+        : zipFileContentUrl;
+
       const response = await api.get(urlWithToken);
-      
+
       if (response.data && response.data.content) {
-        // Store the full response data including content_type and is_binary flags
         setZipFileContent({
           content: response.data.content,
           contentType: response.data.content_type,
-          isBinary: response.data.is_binary || false
+          isBinary: response.data.is_binary || false,
         });
       } else {
         setZipFileContent({
-          content: 'No content available',
-          contentType: 'text/plain',
-          isBinary: false
+          content: "No content available",
+          contentType: "text/plain",
+          isBinary: false,
         });
       }
     } catch (error) {
-      console.error('Error viewing zip file:', error);
-      toast.error('Failed to view file from zip');
+      console.error("Error viewing zip file:", error);
+      toast.error("Failed to view file from zip");
       setZipFileContent({
-        content: 'Error loading file content',
-        contentType: 'text/plain',
-        isBinary: false
+        content: "Error loading file content",
+        contentType: "text/plain",
+        isBinary: false,
       });
     }
   };
@@ -118,59 +151,65 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
     );
   }
 
-  // Render PDF viewer
-  if (fileType === 'pdf' && fileUrl) {
-    // Get the token for authentication
-    const token = localStorage.getItem('token');
-    const authenticatedUrl = token ? `${fileUrl}?token=${token}` : fileUrl;
-    
+  // PDF
+  if (fileType === "pdf" && fileUrl) {
     return (
       <div className="w-full h-[80vh] border border-gray-200 rounded-lg overflow-hidden">
-        <iframe 
-          src={authenticatedUrl} 
-          className="w-full h-full" 
-          title="PDF Viewer"
-        ></iframe>
+        <iframe src={fileUrl} className="w-full h-full" title="PDF Viewer"></iframe>
       </div>
     );
   }
 
-  // Render DOCX viewer
-  if (fileType === 'docx' && fileUrl) {
-    // Get the token for authentication
-    const token = localStorage.getItem('token');
-    const authenticatedUrl = token ? `${fileUrl}?token=${token}` : fileUrl;
-    
+  // DOCX
+  if (fileType === "docx" && docxContent) {
     return (
-      <div className="w-full h-[80vh] border border-gray-200 rounded-lg overflow-hidden">
-        <iframe 
-          src={authenticatedUrl} 
-          className="w-full h-full" 
-          title="DOCX Viewer"
-        ></iframe>
-      </div>
+      <div
+        ref={docxContainerRef}
+        className="w-full h-[80vh] overflow-auto border border-gray-200 rounded-lg p-4 bg-white"
+      />
     );
   }
 
-  // Render TEX viewer
-  if (fileType === 'tex' && fileUrl) {
-    // Get the token for authentication
-    const token = localStorage.getItem('token');
-    const authenticatedUrl = token ? `${fileUrl}?token=${token}` : fileUrl;
-    
+  // LaTeX
+  if (fileType === "tex" && texContent) {
+    const mathRegex = /\$(.*?)\$|\\\[(.*?)\\\]/gs;
+    const equations = [];
+    let match;
+    while ((match = mathRegex.exec(texContent)) !== null) {
+      const eq = match[1] || match[2];
+      if (eq) equations.push(eq.trim());
+    }
+
     return (
-      <div className="w-full h-[80vh] border border-gray-200 rounded-lg overflow-hidden bg-white p-4">
-        <iframe 
-          src={authenticatedUrl} 
-          className="w-full h-full" 
-          title="LaTeX Viewer"
-        ></iframe>
+      <div className="w-full h-[80vh] overflow-auto border border-gray-200 rounded-lg p-4 bg-white space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-2">LaTeX Source</h3>
+          <SyntaxHighlighter
+            language="latex"
+            style={oneDark}
+            wrapLongLines={true}
+            customStyle={{ maxHeight: "40vh", borderRadius: "0.5rem" }}
+          >
+            {texContent}
+          </SyntaxHighlighter>
+        </div>
+
+        {equations.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Rendered Equations</h3>
+            <div className="space-y-4">
+              {equations.map((eq, idx) => (
+                <BlockMath key={idx} math={eq} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // Render ZIP contents
-  if (fileType === 'zip' && zipContents.length > 0) {
+  // ZIP
+  if (fileType === "zip" && zipContents.length > 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-1 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 overflow-auto max-h-[80vh]">
@@ -180,7 +219,11 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
               <li key={index}>
                 <button
                   onClick={() => viewZipFile(file)}
-                  className={`w-full text-left px-3 py-2 rounded text-sm ${selectedZipFile === file ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                  className={`w-full text-left px-3 py-2 rounded text-sm ${
+                    selectedZipFile === file
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
                 >
                   {file}
                 </button>
@@ -195,12 +238,11 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
               {zipFileContent ? (
                 <>
                   {zipFileContent.isBinary ? (
-                    // Render binary content (images)
                     <div className="flex justify-center">
-                      {zipFileContent.contentType.startsWith('image/') ? (
-                        <img 
-                          src={`data:${zipFileContent.contentType};base64,${zipFileContent.content}`} 
-                          alt={selectedZipFile} 
+                      {zipFileContent.contentType.startsWith("image/") ? (
+                        <img
+                          src={`data:${zipFileContent.contentType};base64,${zipFileContent.content}`}
+                          alt={selectedZipFile}
                           className="max-w-full max-h-[70vh] object-contain"
                         />
                       ) : (
@@ -210,10 +252,14 @@ const FileViewer = ({ paperworkId, versionNo, fileType }) => {
                       )}
                     </div>
                   ) : (
-                    // Render text content
-                    <pre className="bg-gray-50 dark:bg-gray-900 p-4 rounded overflow-auto">
+                    <SyntaxHighlighter
+                      language="text"
+                      style={oneDark}
+                      wrapLongLines={true}
+                      customStyle={{ borderRadius: "0.5rem" }}
+                    >
                       {zipFileContent.content}
-                    </pre>
+                    </SyntaxHighlighter>
                   )}
                 </>
               ) : (

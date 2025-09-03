@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 export const api = axios.create({
-  baseURL: 'http://localhost:8000', // Backend server
+  baseURL: 'https://noel-14-pms-server.hf.space', // Backend server
   headers: {
     'Content-Type': 'application/json',
   },
