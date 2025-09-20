@@ -6,7 +6,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // Create axios instance with base URL
 export const api = axios.create({
-  baseURL: 'http://localhost:8000',  // https://neurostack-in-pms-server.hf.space
+  baseURL: 'https://neurostack-in-pms-server.hf.space', 
   headers: {
     'Content-Type': 'application/json',
   },
