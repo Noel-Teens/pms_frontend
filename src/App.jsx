@@ -24,6 +24,7 @@ const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const UserDetail = lazy(() => import('@/pages/admin/UserDetail'));
 const CreateUser = lazy(() => import('@/pages/admin/CreateUser'));
+const PendingInvitations = lazy(() => import('@/pages/admin/PendingInvitations'));
 const PaperAssignment = lazy(() => import('@/pages/admin/PaperAssignment'));
 const PaperReview = lazy(() => import('@/pages/admin/PaperReview'));
 const VersionDetail = lazy(() => import('@/pages/admin/VersionDetail'));
@@ -92,6 +93,16 @@ function AppRoutes() {
             <ProtectedRoute requiredRole="ADMIN">
               <Layout>
                 <CreateUser />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/pending-invitations"
+          element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <Layout>
+                <PendingInvitations />
               </Layout>
             </ProtectedRoute>
           }

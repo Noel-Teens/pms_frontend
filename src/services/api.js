@@ -6,7 +6,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // Create axios instance with base URL
 export const api = axios.create({
-  baseURL: 'https://neurostack-in-pms-server.hf.space',
+  baseURL: 'http://localhost:8000',  // https://neurostack-in-pms-server.hf.space
   headers: {
     'Content-Type': 'application/json',
   },
@@ -134,8 +134,14 @@ export const adminAPI = {
   // Invitation system
   inviteUser: (inviteData) => {
     clearCachePattern('/admin_app/users');
+    clearCachePattern('/admin_app/pending-invitations');
     return api.post('/admin_app/invite/', inviteData);
   },
+  retryInvite: (token) => {
+    clearCachePattern('/admin_app/pending-invitations');
+    return api.post(`/admin_app/retry-invite/${token}/`);
+  },
+  getPendingInvitations: () => api.get('/admin_app/pending-invitations/'),
   verifyInvite: (token) => api.get(`/admin_app/verify-invite/${token}/`),
   acceptInvite: (token, userData) => api.post(`/admin_app/accept-invite/${token}/`, userData),
 };

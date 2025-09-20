@@ -353,21 +353,53 @@ const handleDownload = async (fileType, versionNo) => {
                   </h2>
                   <div className="space-y-4">
                     <div className="border-b border-gray-100 dark:border-gray-600 pb-3">
-                      <span className="text-gray-500 dark:text-gray-400 text-sm block">Name</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm block">Username</span>
                       <p className="font-medium text-gray-900 dark:text-gray-100 mt-1 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {paperwork.researcher_name}
+                        {paperwork.researcher?.username || 'Not available'}
                       </p>
                     </div>
-                    <div>
+                    <div className="border-b border-gray-100 dark:border-gray-600 pb-3">
                       <span className="text-gray-500 dark:text-gray-400 text-sm block">Email</span>
                       <p className="font-medium text-gray-900 dark:text-gray-100 mt-1 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        {paperwork.researcher_email || 'Not available'}
+                        {paperwork.researcher?.email || 'Not available'}
+                      </p>
+                    </div>
+                    <div className="border-b border-gray-100 dark:border-gray-600 pb-3">
+                      <span className="text-gray-500 dark:text-gray-400 text-sm block">Role</span>
+                      <p className="font-medium text-gray-900 dark:text-gray-100 mt-1 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          paperwork.researcher?.role === 'ADMIN' 
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' 
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        }`}>
+                          {paperwork.researcher?.role || 'Not available'}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm block">Status</span>
+                      <p className="font-medium text-gray-900 dark:text-gray-100 mt-1 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          paperwork.researcher?.status === 'ACTIVE' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                            : paperwork.researcher?.status === 'INACTIVE'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                        }`}>
+                          {paperwork.researcher?.status || 'Not available'}
+                        </span>
                       </p>
                     </div>
                   </div>
